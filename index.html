@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en"> 
+ <head> 
+  <meta charset="UTF-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <title>Medical Terminology Quiz</title> 
+  <script src="https://cdn.tailwindcss.com"></script> 
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"> 
+  <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        /* Custom styles for the option buttons */
+        .option-button {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            text-align: left;
+        }
+        .option-button:hover:not(.answered) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+        }
+        /* Icon styles */
+        .feedback-icon {
+            width: 24px;
+            height: 24px;
+            margin-left: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .feedback-icon-visible {
+            opacity: 1;
+        }
+    </style> 
+ </head> 
+ <body> 
+  <div id="quiz-container" class="w-full max-w-2xl bg-white shadow-xl rounded-2xl p-6 md:p-10"> <!-- Header: Score and Progress --> 
+   <div class="flex justify-between items-center mb-6 border-b pb-4 border-gray-200"> 
+    <h1 class="text-3xl font-bold text-gray-800">Terminology Quiz Lec-03</h1> 
+    <div class="text-lg font-semibold text-gray-700">
+      Score: <span id="score-display" class="text-green-600">0</span> / <span id="total-questions">100</span> 
+    </div> 
+   </div> <!-- Question Display --> 
+   <div id="question-card" class="mb-8 min-h-24"> 
+    <p class="text-2xl font-semibold text-gray-800 mb-4" id="question-text"> Loading question... </p> 
+    <div id="options-container" class="space-y-4"> <!-- Options will be injected here --> 
+    </div> 
+   </div> <!-- Navigation and Progress --> 
+   <div class="flex justify-between items-center pt-4 border-t border-gray-200"> 
+    <div class="text-lg text-gray-600 font-medium">
+      Question <span id="current-q-number">0</span> of 35
+    </div> <button id="next-button" onclick="nextQuestion()" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition duration-150 ease-in-out disabled:bg-gray-400" disabled> Next Question </button> 
+   </div> <!-- Final Score Modal --> 
+   <div id="final-score-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50"> 
+    <div class="bg-white rounded-xl p-8 text-center shadow-2xl w-full max-w-sm"> 
+     <h2 class="text-4xl font-extrabold text-blue-600 mb-4">Quiz Complete!</h2> 
+     <p class="text-xl text-gray-700 mb-6">Your final score is:</p> 
+     <p class="text-6xl font-black text-green-700 mb-8" id="final-score-text">0 / 100</p> <button onclick="window.location.reload()" class="px-6 py-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition duration-150"> Start Over </button> 
+    </div> 
+   </div> 
+  </div> 
+  <script>
+      
+        const quizData = [
+          
+          
+  {
+    "question": "1. What does the prefix \"brady\" mean?",
+    "options": ["Rapid", "Slow", "Cold", "Hot"],
+    "answer": "Slow"
+  },
+  {
+    "question": "2. What does \"tachycardia\" refer to?",
+    "options": ["Slow heart rate", "Rapid heart rate", "Normal heart rate", "Abnormal heart rate"],
+    "answer": "Rapid heart rate"
+  },
+  {
+    "question": "3. What is cryosurgery?",
+    "options": ["Surgery using heat", "Surgery using cold temperatures", "Surgery without anesthesia", "Surgery to remove tissues"],
+    "answer": "Surgery using cold temperatures"
+  },
+  {
+    "question": "4. What does the prefix \"thermo\" indicate?",
+    "options": ["Cold", "Fast", "Hot", "Slow"],
+    "answer": "Hot"
+  },
+  {
+    "question": "5. What is an example of a mal condition?",
+    "options": ["Euphoria", "Malnutrition", "Euthyroid", "Hyperglycemia"],
+    "answer": "Malnutrition"
+  },
+  {
+    "question": "6. What does \"neo\" mean?",
+    "options": ["Old", "New", "Many", "Few"],
+    "answer": "New"
+  },
+  {
+    "question": "7. What is geriatrics?",
+    "options": ["Study of children's health", "Study of diseases of old age", "Study of heart disease", "Study of skin diseases"],
+    "answer": "Study of diseases of old age"
+  },
+  {
+    "question": "8. What does \"poly\" signify?",
+    "options": ["Few", "Many", "Hot", "Cold"],
+    "answer": "Many"
+  },
+  {
+    "question": "9. What is oliguria?",
+    "options": ["High urine output", "Low urine output", "No urine output", "Normal urine output"],
+    "answer": "Low urine output"
+  },
+  {
+    "question": "10. What does \"hyper\" indicate?",
+    "options": ["Low", "Normal", "High", "Few"],
+    "answer": "High"
+  },
+  {
+    "question": "11. What is hyperglycemia?",
+    "options": ["Low blood sugar", "Normal blood sugar", "High blood sugar", "No blood sugar"],
+    "answer": "High blood sugar"
+  },
+  {
+    "question": "12. What does \"hypo\" mean?",
+    "options": ["High", "Low", "Fast", "Slow"],
+    "answer": "Low"
+  },
+  {
+    "question": "13. What is hypotension?",
+    "options": ["High blood pressure", "Normal blood pressure", "Low blood pressure", "No blood pressure"],
+    "answer": "Low blood pressure"
+  },
+  {
+    "question": "14. What does the prefix \"a\" signify?",
+    "options": ["With", "Without", "Against", "Before"],
+    "answer": "Without"
+  },
+  {
+    "question": "15. What does \"aphasia\" refer to?",
+    "options": ["Loss of speech", "Difficulty in breathing", "Abnormal heart rate", "High blood pressure"],
+    "answer": "Loss of speech"
+  },
+  {
+    "question": "16. What does \"anti\" mean?",
+    "options": ["Before", "Against", "Without", "New"],
+    "answer": "Against"
+  },
+  {
+    "question": "17. What is an antibiotic?",
+    "options": ["A drug that increases blood pressure", "A drug that inhibits bacterial growth", "A drug that causes pain", "A drug that increases heart rate"],
+    "answer": "A drug that inhibits bacterial growth"
+  },
+  {
+    "question": "18. What does \"contra\" mean?",
+    "options": ["For", "Against", "Within", "Before"],
+    "answer": "Against"
+  },
+  {
+    "question": "19. What is contraception?",
+    "options": ["Prevention of disease", "Prevention of pregnancy", "Treatment of infections", "Diagnosis of illness"],
+    "answer": "Prevention of pregnancy"
+  },
+  {
+    "question": "20. What does \"de\" signify?",
+    "options": ["Increase", "Remove, without", "Against", "Many"],
+    "answer": "Remove, without"
+  },
+  {
+    "question": "21. What is decalcification?",
+    "options": ["Addition of calcium", "Removal of calcium", "Hardening of bones", "Softening of tissues"],
+    "answer": "Removal of calcium"
+  },
+  {
+    "question": "22. What does \"dis\" mean?",
+    "options": ["Apart, absence", "Fast", "Slow", "Together"],
+    "answer": "Apart, absence"
+  },
+  {
+    "question": "23. What is dysfunction?",
+    "options": ["Normal function", "Abnormality of function", "Increase in function", "Decrease in function"],
+    "answer": "Abnormality of function"
+  },
+  {
+    "question": "24. What does \"dys\" indicate?",
+    "options": ["Normal", "Difficult", "Easy", "Rapid"],
+    "answer": "Difficult"
+  },
+  {
+    "question": "25. What is dysphagia?",
+    "options": ["Difficulty in breathing", "Difficulty in swallowing", "Difficulty in speaking", "Difficulty in urination"],
+    "answer": "Difficulty in swallowing"
+  },
+  {
+    "question": "26. What does \"in\" mean in medical terminology?",
+    "options": ["With", "Not", "Against", "Before"],
+    "answer": "Not"
+  },
+  {
+    "question": "27. What is insomnia?",
+    "options": ["Difficulty sleeping", "Excessive sleeping", "Normal sleeping", "No sleeping"],
+    "answer": "Difficulty sleeping"
+  },
+  {
+    "question": "28. What does \"im\" indicate?",
+    "options": ["Without", "Not", "Against", "Many"],
+    "answer": "Not"
+  },
+  {
+    "question": "29. What does \"immortal\" mean?",
+    "options": ["Subject to death", "Eternal", "Temporary", "Mortal"],
+    "answer": "Eternal"
+  },
+  {
+    "question": "30. What does \"mal\" signify?",
+    "options": ["Good", "Bad", "New", "Old"],
+    "answer": "Bad"
+  },
+  {
+    "question": "31. What is osteomalacia?",
+    "options": ["Abnormal hardening of bones", "Abnormal softening of bones", "Normal bone density", "Bone fracture"],
+    "answer": "Abnormal softening of bones"
+  },
+  {
+    "question": "32. What does \"euthyroid\" refer to?",
+    "options": ["Abnormal thyroid function", "Normal thyroid function", "High thyroid function", "Low thyroid function"],
+    "answer": "Normal thyroid function"
+  },
+  {
+    "question": "33. What is malabsorption?",
+    "options": ["Faulty absorption of nutrients", "Normal absorption of nutrients", "Excessive absorption of nutrients", "Absence of absorption"],
+    "answer": "Faulty absorption of nutrients"
+  },
+  {
+    "question": "34. What does \"polyuria\" indicate?",
+    "options": ["Decreased urination", "Normal urination", "Increased urination", "Absence of urination"],
+    "answer": "Increased urination"
+  },
+  {
+    "question": "35. What does \"oligo\" mean?",
+    "options": ["Many", "Few", "Normal", "High"],
+    "answer": "Few"
+  }
+];
+      
+       
+
+        // --- GLOBAL STATE ---
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+        const totalQuestions = quizData.length;
+
+        // --- DOM ELEMENTS ---
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const scoreDisplay = document.getElementById('score-display');
+        const currentQNumber = document.getElementById('current-q-number');
+        const nextButton = document.getElementById('next-button');
+        const finalScoreModal = document.getElementById('final-score-modal');
+        const finalScoreText = document.getElementById('final-score-text');
+
+        // --- UTILITY ICONS (Inline SVG for instant rendering) ---
+        const correctIconSVG = `
+            <svg class="feedback-icon text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>`;
+        const incorrectIconSVG = `
+            <svg class="feedback-icon text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>`;
+        
+        // --- QUIZ LOGIC FUNCTIONS ---
+
+        function loadQuestion() {
+            if (currentQuestionIndex >= totalQuestions) {
+                showFinalScore();
+                return;
+            }
+
+            const currentQ = quizData[currentQuestionIndex];
+            answered = false;
+            nextButton.disabled = true;
+            optionsContainer.innerHTML = '';
+
+            questionText.textContent = currentQ.question;
+            currentQNumber.textContent = currentQuestionIndex + 1;
+
+            currentQ.options.forEach((optionText, index) => {
+                const optionButton = document.createElement('button');
+                optionButton.className = 'option-button w-full p-4 bg-gray-100 rounded-xl font-medium text-gray-700 shadow-sm border border-gray-200';
+                optionButton.setAttribute('data-option', optionText);
+                optionButton.innerHTML = `
+                    <span class="flex-1">${optionText}</span>
+                    <span class="feedback-placeholder"></span>
+                `;
+                optionButton.onclick = () => selectOption(optionText, optionButton);
+                optionsContainer.appendChild(optionButton);
+            });
+        }
+
+        function selectOption(selectedOptionText, selectedButton) {
+            if (answered) {
+                return; // Prevent multiple clicks on the current question
+            }
+            answered = true;
+            nextButton.disabled = false;
+            
+            const currentQ = quizData[currentQuestionIndex];
+            const isCorrect = selectedOptionText === currentQ.answer;
+
+            if (isCorrect) {
+                score++;
+                scoreDisplay.textContent = score;
+            }
+
+            showFeedback(currentQ.answer, selectedButton);
+        }
+
+        function showFeedback(correctAnswer, selectedButton) {
+            const buttons = optionsContainer.querySelectorAll('.option-button');
+            
+            buttons.forEach(button => {
+                const optionText = button.getAttribute('data-option');
+                const isCorrect = optionText === correctAnswer;
+                const isSelected = button === selectedButton;
+
+                // 1. Mark the button as answered (disables hover/interaction)
+                button.classList.add('answered');
+                button.disabled = true;
+
+                // 2. Add visual feedback (Telegram Quiz Style)
+                const iconPlaceholder = button.querySelector('.feedback-placeholder');
+                
+                if (isCorrect) {
+                    // Always mark the correct answer green
+                    button.classList.add('bg-green-100', 'border-green-400');
+                    iconPlaceholder.innerHTML = correctIconSVG;
+                    iconPlaceholder.querySelector('.feedback-icon').classList.add('feedback-icon-visible');
+                    button.classList.remove('bg-gray-100');
+                } else if (isSelected) {
+                    // Mark the user's incorrect choice red
+                    button.classList.add('bg-red-100', 'border-red-400');
+                    iconPlaceholder.innerHTML = incorrectIconSVG;
+                    iconPlaceholder.querySelector('.feedback-icon').classList.add('feedback-icon-visible');
+                    button.classList.remove('bg-gray-100');
+                }
+            });
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showFinalScore() {
+            finalScoreText.textContent = `${score} / ${totalQuestions}`;
+            finalScoreModal.classList.remove('hidden');
+        }
+
+        // --- INITIALIZATION ---
+        window.onload = function() {
+            document.getElementById('total-questions').textContent = totalQuestions;
+            loadQuestion();
+        };
+
+    </script> 
+ 
+</body></html>
+
+
+
+       
